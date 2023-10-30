@@ -37,14 +37,16 @@ public class SSCAppVersionCopyStateCommand extends AbstractSSCJsonNodeOutputComm
     @Getter
     @Mixin
     private OutputHelperMixins.TableNoQuery outputHelper;
-    @Mixin private SSCAppAndVersionNameResolverMixin.PositionalParameter sscAppAndVersionNameResolver;
-    @Mixin private SSCFromAppVersionResolverMixin.RequiredOption fromAppVersionResolver;
+    @Mixin
+    private SSCAppAndVersionNameResolverMixin.PositionalParameter sscAppAndVersionNameResolver;
+    @Mixin
+    private SSCFromAppVersionResolverMixin.RequiredOption fromAppVersionResolver;
 
     @Override
     public JsonNode getJsonNode(UnirestInstance unirest) {
         ObjectMapper mapper = new ObjectMapper();
-        SSCAppVersionDescriptor sourceAppVersionDescriptor = SSCAppVersionHelper.getOptionalAppVersionFromAppAndVersionName(unirest, sscAppAndVersionNameResolver.getAppAndVersionNameDescriptor());
-        SSCAppVersionDescriptor targetAppVersionDescriptor = fromAppVersionResolver.getAppVersionDescriptor(unirest, sscAppAndVersionNameResolver.getDelimiter());
+        SSCAppVersionDescriptor targetAppVersionDescriptor = SSCAppVersionHelper.getRequiredAppVersion(unirest, sscAppAndVersionNameResolver.getAppAndVersionName(), sscAppAndVersionNameResolver.getDelimiter());
+        SSCAppVersionDescriptor sourceAppVersionDescriptor = fromAppVersionResolver.getAppVersionDescriptor(unirest, sscAppAndVersionNameResolver.getDelimiter());
 
         return mapper.valueToTree(copyState(unirest, sourceAppVersionDescriptor, targetAppVersionDescriptor));
 
