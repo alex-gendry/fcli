@@ -12,54 +12,39 @@
  *******************************************************************************/
 package com.fortify.cli.ssc.appversion.cli.cmd;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.formkiq.graalvm.annotations.Reflectable;
-import com.fortify.cli.common.json.JsonHelper;
-import com.fortify.cli.common.json.JsonNodeHolder;
 import com.fortify.cli.common.output.cli.cmd.IJsonNodeSupplier;
 import com.fortify.cli.common.output.cli.mixin.OutputHelperMixins;
 import com.fortify.cli.common.output.transform.IActionCommandResultSupplier;
 import com.fortify.cli.common.output.transform.IRecordTransformer;
 import com.fortify.cli.common.rest.unirest.UnexpectedHttpResponseException;
 import com.fortify.cli.ssc._common.output.cli.cmd.AbstractSSCJsonNodeOutputCommand;
-import com.fortify.cli.ssc._common.output.cli.cmd.AbstractSSCOutputCommand;
 import com.fortify.cli.ssc._common.rest.SSCUrls;
-import com.fortify.cli.ssc.appversion.cli.mixin.SSCSourceAndTargetAppVersionResolverMixin;
+import com.fortify.cli.ssc.appversion.cli.mixin.SSCAppAndVersionNameResolverMixin;
+import com.fortify.cli.ssc.appversion.cli.mixin.SSCFromAppVersionResolverMixin;
 import com.fortify.cli.ssc.appversion.helper.SSCAppVersionDescriptor;
 import com.fortify.cli.ssc.appversion.helper.SSCAppVersionHelper;
-import com.fortify.cli.ssc.attribute.domain.SSCAttributeDefinitionType;
-import com.fortify.cli.ssc.attribute.helper.SSCAttributeOptionDefinitionDescriptor;
 import kong.unirest.UnirestInstance;
-import kong.unirest.json.JSONObject;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Command(name = "copy-state")
 public class SSCAppVersionCopyStateCommand extends AbstractSSCJsonNodeOutputCommand implements IJsonNodeSupplier, IRecordTransformer, IActionCommandResultSupplier {
     @Getter
     @Mixin
     private OutputHelperMixins.TableNoQuery outputHelper;
-    @Mixin
-    private SSCSourceAndTargetAppVersionResolverMixin.RequiredOption appVersionsResolver;
+    @Mixin private SSCAppAndVersionNameResolverMixin.PositionalParameter sscAppAndVersionNameResolver;
+    @Mixin private SSCFromAppVersionResolverMixin.RequiredOption fromAppVersionResolver;
 
     @Override
     public JsonNode getJsonNode(UnirestInstance unirest) {
         ObjectMapper mapper = new ObjectMapper();
-        SSCAppVersionDescriptor sourceAppVersionDescriptor = appVersionsResolver.getSourceAppVersionDescriptor(unirest);
-        SSCAppVersionDescriptor targetAppVersionDescriptor = appVersionsResolver.getTargetAppVersionDescriptor(unirest);
+        SSCAppVersionDescriptor sourceAppVersionDescriptor = SSCAppVersionHelper.getOptionalAppVersionFromAppAndVersionName(unirest, sscAppAndVersionNameResolver.getAppAndVersionNameDescriptor());
+        SSCAppVersionDescriptor targetAppVersionDescriptor = fromAppVersionResolver.getAppVersionDescriptor(unirest, sscAppAndVersionNameResolver.getDelimiter());
 
         return mapper.valueToTree(copyState(unirest, sourceAppVersionDescriptor, targetAppVersionDescriptor));
 
