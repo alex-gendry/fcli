@@ -35,9 +35,14 @@ public class SSCAppVersionResolverMixin {
             return getAppVersionDescriptor(unirest, "id").getVersionId();
         }
     }
-    
+
     public static class RequiredOption extends AbstractSSCAppVersionResolverMixin {
         @Option(names = {"--appversion", "--av"}, required = true, descriptionKey = "fcli.ssc.appversion.resolver.nameOrId")
+        @Getter private String appVersionNameOrId;
+    }
+
+    public static class OptionalOption extends AbstractSSCAppVersionResolverMixin {
+        @Option(names = {"--appversion", "--av"}, required = false, descriptionKey = "fcli.ssc.appversion.resolver.nameOrId")
         @Getter private String appVersionNameOrId;
     }
     

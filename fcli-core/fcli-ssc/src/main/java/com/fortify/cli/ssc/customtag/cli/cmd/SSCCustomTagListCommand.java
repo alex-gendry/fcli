@@ -35,6 +35,8 @@ public class SSCCustomTagListCommand extends AbstractSSCBaseRequestOutputCommand
     @Mixin
     private OutputHelperMixins.List outputHelper;
     @Mixin
+    private SSCAppVersionResolverMixin.OptionalOption appVersionResolver;
+    @Mixin
     private SSCQParamMixin qParamMixin;
     @Getter
     private IServerSideQueryParamValueGenerator serverSideQueryParamGenerator = new SSCQParamGenerator()
@@ -44,7 +46,11 @@ public class SSCCustomTagListCommand extends AbstractSSCBaseRequestOutputCommand
 
     @Override
     public HttpRequest<?> getBaseRequest(UnirestInstance unirest) {
-        return unirest.get(SSCUrls.CUSTOM_TAGS);
+        if (this.appVersionResolver.getAppVersionNameOrId() != null) {
+            return getUnirestInstance().get(SSCUrls.PROJECT_VERSION_CUSTOM_TAGS(this.appVersionResolver.getAppVersionId(unirest)));
+        } else {
+            return getUnirestInstance().get(SSCUrls.CUSTOM_TAGS);
+        }
     }
 
     @Override
