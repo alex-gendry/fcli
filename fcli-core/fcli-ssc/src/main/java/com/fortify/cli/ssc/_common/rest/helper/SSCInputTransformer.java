@@ -13,9 +13,23 @@
 package com.fortify.cli.ssc._common.rest.helper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fortify.cli.common.json.JsonHelper;
 
 public class SSCInputTransformer {
     public static final JsonNode getDataOrSelf(JsonNode json) {
-        return json.has("data") ? json.get("data") : json;
+        if(json.has("data") ) {
+            return json.get("data");
+        } else {
+            switch(json.getNodeType()){
+                case OBJECT:
+                    ArrayNode data = JsonHelper.getObjectMapper().createArrayNode();
+                    data.add(json);
+                    return data;
+                case ARRAY:
+                default:
+                    return json;
+            }
+        }
     }
 }
