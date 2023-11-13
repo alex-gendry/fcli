@@ -22,6 +22,7 @@ import picocli.CommandLine.Command;
         aliases = "av",
         subcommands = {
             SSCAppVersionCreateCommand.class,
+            SSCAppVersionCopyAuditCommand.class,
             SSCAppVersionDeleteCommand.class,
             SSCAppVersionCopyStateCommand.class,
             SSCAppVersionDownloadStateCommand.class,
