@@ -16,7 +16,7 @@ fcli_version:
 </head>
 <body class="manpage toc2 toc-left">
 
-{% include banner.html bannerTitle="FCLI: The Universal Fortify CLI" currentVersion="0.20231030.211534-dev_develop" %}
+{% include banner.html bannerTitle="FCLI: The Universal Fortify CLI" currentVersion="0.20231116.090425-dev_develop" %}
 
 
 <div id="header">
@@ -43,10 +43,9 @@ fcli_version:
 <h2 id="_synopsis"><a class="anchor" href="#_synopsis"></a>Synopsis</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><strong>fcli ssc appversion create</strong> [<strong>--auto-required-attrs</strong>] [<strong>--copy-state</strong>]
-                           [<strong>--skip-if-exists</strong>] [<strong>--active</strong>=<em>&lt;active&gt;</em>]
-                           [<strong>-d</strong>=<em>&lt;description&gt;</em>] [<strong>--delim</strong>=<em>&lt;delimiter&gt;</em>]
-                           [<strong>--from</strong>=<em>&lt;appVersionNameOrId&gt;</em>]
+<p><strong>fcli ssc appversion create</strong> [<strong>--auto-required-attrs</strong>] [<strong>--skip-if-exists</strong>]
+                           [<strong>--active</strong>=<em>&lt;active&gt;</em>] [<strong>-d</strong>=<em>&lt;description&gt;</em>]
+                           [<strong>--delim</strong>=<em>&lt;delimiter&gt;</em>]
                            [<strong>--issue-template</strong>=<em>&lt;issueTemplateNameOrId&gt;</em>]
                            [<strong>--add-users</strong>=<em>&lt;authEntitySpecs&gt;</em>[,
                            <em>&lt;authEntitySpecs&gt;</em>&#8230;&#8203;]]&#8230;&#8203; [<strong>--attrs</strong>=<em>[CATEGORY:]</em>
@@ -55,7 +54,9 @@ fcli_version:
                            [<strong>--log-file</strong>=<em>&lt;logFile&gt;</em>] [<strong>--log-level</strong>=<em>&lt;logLevel&gt;</em>]]
                            [[<strong>--session</strong>=<em>&lt;sessionName&gt;</em>]] <em class="[<strong>-o</strong>=_format[=&lt;options&gt;">]
                            [<strong>--store</strong>=_variableName[=&lt;propertyNames&gt;]</em>]
-                           [<strong>--to-file</strong>=<em>&lt;outputFile&gt;</em>]] <em>&lt;app&gt;:&lt;version&gt;</em></p>
+                           [<strong>--to-file</strong>=<em>&lt;outputFile&gt;</em>]]
+                           [<strong>--from</strong>=<em>&lt;appVersionNameOrId&gt;</em> [<strong>--copy</strong>=<em>&lt;copyOptions&gt;</em>[,
+                           <em>&lt;copyOptions&gt;</em>&#8230;&#8203;]]&#8230;&#8203;] <em>&lt;app&gt;:&lt;version&gt;</em></p>
 </div>
 </div>
 </div>
@@ -86,9 +87,9 @@ fcli_version:
 <dd>
 <p>Automatically set a default value for required application version attributes.</p>
 </dd>
-<dt class="hdlist1"><strong>--copy-state</strong></dt>
+<dt class="hdlist1"><strong>--copy</strong>=<em>&lt;copyOptions&gt;</em>[,<em>&lt;copyOptions&gt;</em>&#8230;&#8203;]</dt>
 <dd>
-<p>Copy application state (Attributes, CustomTages and BugTracker settings). Requires --from</p>
+<p>Comma separated list of elements to copy (Requires --copy-from). By default, all are copied. Allowed values: AnalysisProcessingRules, BugTrackerConfiguration, CustomTags, State.</p>
 </dd>
 <dt class="hdlist1"><strong>-d</strong>, <strong>--description</strong>=<em>&lt;description&gt;</em></dt>
 <dd>
@@ -98,9 +99,12 @@ fcli_version:
 <dd>
 <p>Change the default delimiter character when using options that accept "application:version" as an argument or parameter.</p>
 </dd>
-<dt class="hdlist1"><strong>--from</strong>=<em>&lt;appVersionNameOrId&gt;</em></dt>
+<dt class="hdlist1"><strong>--from, --copy-from</strong>=<em>&lt;appVersionNameOrId&gt;</em></dt>
 <dd>
-<p>Copy FROM application version: id or &lt;application&gt;:&lt;version&gt; name.</p>
+<p>Copy FROM application version:</p>
+<div class="paragraph">
+<p>id or &lt;application&gt;:&lt;version&gt; name.</p>
+</div>
 </dd>
 <dt class="hdlist1"><strong>--issue-template</strong>=<em>&lt;issueTemplateNameOrId&gt;</em></dt>
 <dd>
@@ -190,7 +194,7 @@ fcli_version:
 <div id="footer">
 <div id="footer-text">
 Version <br>
-Last updated 2023-10-30 21:18:11 UTC
+Last updated 2023-11-16 09:05:57 UTC
 </div>
 </div>
 </body>
