@@ -18,19 +18,19 @@ import picocli.CommandLine.Option;
 import java.util.Map;
 
 public class SSCCustomTagUpdateMixin {
-        private static final String PARAM_LABEL = "CUSTOM_TAG_NAME_OR_ID";
+        private static final String PARAM_LABEL = "CUSTOM_TAG_NAME_OR_ID=VALUE";
     public static abstract class AbstractSSCAppVersionCustomTagUpdateMixin {
         public abstract Map<String,String> getCustomTags();
 
     }
     
     public static class OptionalCustomTagOption extends AbstractSSCAppVersionCustomTagUpdateMixin {
-        @Option(names = {"--cts", "--customtags"}, required = false, split = ",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.ssc.customtag.update.option")
+        @Option(names = {"--tags", "--customtags"}, required = false, split = ",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.ssc.customtag.update.option")
         @Getter private Map<String,String> customTags;
     }
     
     public static class RequiredCustomTagOption extends AbstractSSCAppVersionCustomTagUpdateMixin {
-        @Option(names = {"--cts", "--customtags"}, required = true, split = ",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.ssc.customtag.update.option")
+        @Option(names = {"--tags", "--customtags"}, required = true, split = ",", paramLabel = PARAM_LABEL, descriptionKey = "fcli.ssc.customtag.update.option")
         @Getter private Map<String,String> customTags;
     }
 }

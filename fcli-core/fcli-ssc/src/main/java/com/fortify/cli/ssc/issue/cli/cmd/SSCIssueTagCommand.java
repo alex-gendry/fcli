@@ -13,15 +13,14 @@
 package com.fortify.cli.ssc.issue.cli.cmd;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fortify.cli.common.json.JsonHelper;
 import com.fortify.cli.common.output.cli.cmd.IJsonNodeSupplier;
 import com.fortify.cli.common.output.cli.mixin.OutputHelperMixins;
+import com.fortify.cli.common.output.query.QueryExpression;
+import com.fortify.cli.common.output.query.QueryExpressionTypeConverter;
 import com.fortify.cli.common.output.transform.IActionCommandResultSupplier;
-import com.fortify.cli.common.output.transform.IRecordTransformer;
-import com.fortify.cli.ssc._common.output.cli.cmd.AbstractSSCJsonNodeOutputCommand;
 import com.fortify.cli.ssc._common.output.cli.cmd.AbstractSSCOutputCommand;
 import com.fortify.cli.ssc._common.rest.SSCUrls;
 import com.fortify.cli.ssc.appversion.cli.mixin.SSCAppVersionResolverMixin;
@@ -31,22 +30,27 @@ import com.fortify.cli.ssc.issue.cli.mixin.SSCIssueFilterSetResolverMixin;
 import com.fortify.cli.ssc.issue.helper.SSCIssueFilterHelper;
 import com.fortify.cli.ssc.issue.helper.SSCIssueFilterSetDescriptor;
 import kong.unirest.GetRequest;
-import kong.unirest.UnirestInstance;
 import lombok.Getter;
+import lombok.Setter;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
+import java.util.Iterator;
 import java.util.Map;
 
 @Command(name = "tag")
 public class SSCIssueTagCommand extends AbstractSSCOutputCommand implements IJsonNodeSupplier, IActionCommandResultSupplier {
+    @Getter @Setter
+    private String actionCommandResult = "TAG_SUCCESSFUL";
     @Getter @Mixin private OutputHelperMixins.TableWithQuery outputHelper; 
     @Mixin private SSCAppVersionResolverMixin.RequiredOption parentResolver;
     @Mixin private SSCCustomTagUpdateMixin.RequiredCustomTagOption customTagsMixin;
     @Mixin private SSCIssueFilterSetResolverMixin.FilterSetOption filterSetResolver;
     @Option(names="--filter", required=false) private String filter;
-    @Option(names="--issues-query", required=false) private String query;
+
+    @Option(names = {"--issues-query"}, converter = QueryExpressionTypeConverter.class, paramLabel = "<SpEL expression>")
+    @Getter private QueryExpression query;
 
     // TODO Include options for includeRemoved/Hidden/Suppressed?
 
@@ -57,33 +61,46 @@ public class SSCIssueTagCommand extends AbstractSSCOutputCommand implements IJso
         SSCIssueFilterSetDescriptor filterSetDescriptor = filterSetResolver.getFilterSetDescriptor(unirest, appVersionId);
         GetRequest request = unirest.get(SSCUrls.PROJECT_VERSION_ISSUES(appVersionId))
                 .queryString("limit","-1")
-                .queryString("qm", "issues")
-                .queryString("fields", "id,revision");
+                .queryString("qm", "issues");
         if ( filterSetDescriptor!=null ) {
             request.queryString("filterset", filterSetDescriptor.getGuid());
         }
         if ( filter!=null ) {
             request.queryString("filter", new SSCIssueFilterHelper(unirest, appVersionId).getFilter(filter));
         }
+        JsonNode issues = request.asObject(ObjectNode.class).getBody();
+        ArrayNode selectedIssues = JsonHelper.getObjectMapper().createArrayNode();
+
         if ( query!=null ) {
-            request.queryString("q",query);
+            Iterator<JsonNode> iter = issues.get("data").iterator();
+            while(iter.hasNext()){
+                JsonNode issue = iter.next();
+
+                if(query.matches(issue)){
+                    ObjectNode selectedIssue = JsonHelper.getObjectMapper().createObjectNode();
+                    selectedIssue.put("id", issue.get("id"));
+                    selectedIssue.put("revision", issue.get("revision"));
+                    selectedIssues.add(selectedIssue);
+                }
+            }
         }
 
-        JsonNode issuesResponse = request.asObject(ObjectNode.class).getBody();
-        if(issuesResponse.get("count").intValue() > 0){
-            JsonNode issuesData = issuesResponse.get("data");
+        if(selectedIssues.size() > 0){
             Map<String, String> customTags = customTagsMixin.getCustomTags();
             SSCCustomTagUpdateBuilder customTagHelper = new SSCCustomTagUpdateBuilder(unirest,appVersionId).add(customTags);
             ArrayNode customTagsUpdate = customTagHelper.buildUpdateBody();
-            ObjectNode body = JsonHelper.getObjectMapper().createObjectNode()
-                    .set("issues", issuesData);
-            body.set("issues", issuesData);
+            ObjectNode body = JsonHelper.getObjectMapper().createObjectNode();
+            body.set("issues", selectedIssues);
             body.set("customTagAudit", customTagsUpdate);
 
-            return unirest.post(SSCUrls.PROJECT_VERSION_ISSUES_ACTION_AUDIT(appVersionId)).body(body)
+            unirest.post(SSCUrls.PROJECT_VERSION_ISSUES_ACTION_AUDIT(appVersionId)).body(body)
                     .asObject(JsonNode.class).getBody().get("data");
+
+            return JsonHelper.getObjectMapper().createObjectNode().put("taggedIssuesCount", selectedIssues.size());
         }
-        return issuesResponse;
+
+        setActionCommandResult("TAG_SUCCESSFUL_NO_ISSUES");
+        return JsonHelper.getObjectMapper().createObjectNode().put("taggedIssuesCount", selectedIssues.size());
     }
     
     @Override
@@ -92,10 +109,5 @@ public class SSCIssueTagCommand extends AbstractSSCOutputCommand implements IJso
     }
 
 
-
-    @Override
-    public String getActionCommandResult() {
-        return "TAG_SUCCESSFUL";
-    }
 
 }
