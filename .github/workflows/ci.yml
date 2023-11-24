@@ -10,6 +10,7 @@ env:
   native_image_opts: --verbose -H:Log=registerResource:verbose -H:+PrintClassInitialization
   graal_distribution: graalvm-community
   graal_java_version: 17
+  DO_RELEASE: true
           
 jobs:
   build:
