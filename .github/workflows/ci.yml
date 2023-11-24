@@ -217,7 +217,6 @@ jobs:
         
   release:
     name: release
-    if: needs.build.outputs.do_release
     needs: [build, native_linux, native_mac, native_win]
     runs-on: ubuntu-latest
     steps:
@@ -230,7 +229,6 @@ jobs:
           path: ./
           
       - name: PROD - Prepare release PR
-        if: github.ref == 'refs/heads/main'
         uses: GoogleCloudPlatform/release-please-action@v3
         with:
           command: release-pr
@@ -239,7 +237,6 @@ jobs:
           default-branch: main
           
       - name: DEV - Prepare GitHub release 
-        if: needs.build.outputs.do_dev_release
         run: |
           gh release delete ${{ needs.build.outputs.release_tag }} -y || true
           gh release create ${{ needs.build.outputs.release_tag }} -p -t "Development Release - ${GITHUB_REF#refs/heads/} branch" -n 'See `Assets` section below for latest build artifacts'
@@ -248,14 +245,12 @@ jobs:
           
       - name: DEV - Update ${{ needs.build.outputs.release_tag }} tag
         uses: richardsimko/update-tag@v1
-        if: needs.build.outputs.do_dev_release
         with:
           tag_name: ${{ needs.build.outputs.release_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           
       - name: Upload assets to release
-        if: needs.build.outputs.do_release
         run: |
           files=$(find "./artifact/release-assets" -type f -printf "%p ")
           gh release upload "${{ needs.build.outputs.release_tag }}" $files --clobber
@@ -264,7 +259,6 @@ jobs:
      
   publishPages:
     name: publishPages
-    if: needs.build.outputs.do_release
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
