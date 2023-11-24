@@ -26,7 +26,6 @@ jobs:
       - name: PROD - Prepare GitHub release
         id: create_prod_release
         uses: GoogleCloudPlatform/release-please-action@v3
-        if: github.ref == 'refs/heads/main'
         with:
           command: github-release
           release-type: simple
@@ -34,7 +33,6 @@ jobs:
           default-branch: main
           
       - name: PROD - Define release info
-        if: steps.create_prod_release.outputs.release_created
         run: |
           tag=${{steps.create_prod_release.outputs.tag_name}}
           version=${{steps.create_prod_release.outputs.version}}
@@ -48,7 +46,6 @@ jobs:
           echo RELEASE_VERSION=${version} >> $GITHUB_ENV
           
       - name: DEV - Define release info
-        if: startsWith(github.ref, 'refs/heads/') && !env.DO_PROD_RELEASE
         run: |
           branch="${GITHUB_REF#refs/heads/}"
           tag="dev_${branch//[^a-zA-Z0-9_.-]/.}" # Replace all special characters by a dot
@@ -67,11 +64,9 @@ jobs:
           fi 
       
       - name: Build release ${{env.RELEASE_VERSION}}
-        if: env.DO_BUILD
         run: ./gradlew clean build dist distThirdPartyReleaseAsset distFtest -Pversion=${{env.RELEASE_VERSION}}
         
       - name: Check fcli version
-        if: env.DO_BUILD
         run: java -jar build/libs/fcli.jar --version | tee /dev/stderr | grep -E '[0-9]+\.[0-9]+\.[0-9]+' >/dev/null || (echo "fcli --version doesn't output proper version number"; exit 1)
         
       - name: Publish build artifacts
