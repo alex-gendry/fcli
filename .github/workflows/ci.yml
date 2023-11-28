@@ -26,6 +26,7 @@ jobs:
       - name: PROD - Prepare GitHub release
         id: create_prod_release
         uses: GoogleCloudPlatform/release-please-action@v3
+        if: github.ref == 'refs/heads/main'
         with:
           command: github-release
           release-type: simple
@@ -33,6 +34,7 @@ jobs:
           default-branch: main
           
       - name: PROD - Define release info
+        if: steps.create_prod_release.outputs.release_created
         run: |
           tag=${{steps.create_prod_release.outputs.tag_name}}
           version=${{steps.create_prod_release.outputs.version}}
@@ -46,6 +48,7 @@ jobs:
           echo RELEASE_VERSION=${version} >> $GITHUB_ENV
           
       - name: DEV - Define release info
+        if: startsWith(github.ref, 'refs/heads/') && !env.DO_PROD_RELEASE
         run: |
           branch="${GITHUB_REF#refs/heads/}"
           tag="dev_${branch//[^a-zA-Z0-9_.-]/.}" # Replace all special characters by a dot
@@ -64,9 +67,11 @@ jobs:
           fi 
       
       - name: Build release ${{env.RELEASE_VERSION}}
+        if: env.DO_BUILD
         run: ./gradlew clean build dist distThirdPartyReleaseAsset distFtest -Pversion=${{env.RELEASE_VERSION}}
         
       - name: Check fcli version
+        if: env.DO_BUILD
         run: java -jar build/libs/fcli.jar --version | tee /dev/stderr | grep -E '[0-9]+\.[0-9]+\.[0-9]+' >/dev/null || (echo "fcli --version doesn't output proper version number"; exit 1)
         
       - name: Publish build artifacts
@@ -217,6 +222,7 @@ jobs:
         
   release:
     name: release
+    if: needs.build.outputs.do_release
     needs: [build, native_linux, native_mac, native_win]
     runs-on: ubuntu-latest
     steps:
@@ -229,6 +235,7 @@ jobs:
           path: ./
           
       - name: PROD - Prepare release PR
+        if: github.ref == 'refs/heads/main'
         uses: GoogleCloudPlatform/release-please-action@v3
         with:
           command: release-pr
@@ -237,6 +244,7 @@ jobs:
           default-branch: main
           
       - name: DEV - Prepare GitHub release 
+        if: needs.build.outputs.do_dev_release
         run: |
           gh release delete ${{ needs.build.outputs.release_tag }} -y || true
           gh release create ${{ needs.build.outputs.release_tag }} -p -t "Development Release - ${GITHUB_REF#refs/heads/} branch" -n 'See `Assets` section below for latest build artifacts'
@@ -245,12 +253,14 @@ jobs:
           
       - name: DEV - Update ${{ needs.build.outputs.release_tag }} tag
         uses: richardsimko/update-tag@v1
+        if: needs.build.outputs.do_dev_release
         with:
           tag_name: ${{ needs.build.outputs.release_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           
       - name: Upload assets to release
+        if: needs.build.outputs.do_release
         run: |
           files=$(find "./artifact/release-assets" -type f -printf "%p ")
           gh release upload "${{ needs.build.outputs.release_tag }}" $files --clobber
@@ -259,6 +269,7 @@ jobs:
      
   publishPages:
     name: publishPages
+    if: needs.build.outputs.do_release
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
