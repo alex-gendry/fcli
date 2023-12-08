@@ -48,7 +48,7 @@ public final class SCSastControllerScanStartCommand extends AbstractSCSastContro
     @Option(names = "--notify") private String email; // TODO Add email address validation
     @Mixin private PublishToAppVersionResolverMixin sscAppVersionResolver;
     @Option(names = "--ssc-ci-token") private String ciToken;
-    @Getter @Option(names = {"--sargs"})
+    @Getter @Option(names = {"--sargs","--scan-args"})
     private String scaRuntimeArgs = "";
     
     // TODO Add options for specifying (custom) rules file(s), filter file(s) and project template
