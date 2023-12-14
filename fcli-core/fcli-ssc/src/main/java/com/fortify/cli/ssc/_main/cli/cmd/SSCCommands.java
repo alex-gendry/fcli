@@ -25,6 +25,7 @@ import com.fortify.cli.ssc.performance_indicator.cli.cmd.SSCPerformanceIndicator
 import com.fortify.cli.ssc.plugin.cli.cmd.SSCPluginCommands;
 import com.fortify.cli.ssc.report.cli.cmd.SSCReportCommands;
 import com.fortify.cli.ssc.rest.cli.cmd.SSCRestCommands;
+import com.fortify.cli.ssc.summary.cli.cmd.SSCSummaryCommands;
 import com.fortify.cli.ssc.system_state.cli.cmd.SSCSystemStateCommands;
 import com.fortify.cli.ssc.variable.cli.cmd.SSCVariableCommands;
 
@@ -54,6 +55,7 @@ import picocli.CommandLine.Command;
                 SSCVariableCommands.class,
                 SSCPluginCommands.class,
                 SSCReportCommands.class,
+                SSCSummaryCommands.class,
                 SSCSystemStateCommands.class,
                 SSCRestCommands.class,
         }
