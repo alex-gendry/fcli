@@ -42,7 +42,7 @@ public class SSCSummaryGenerateCommand extends AbstractRunnableCommand implement
         summary += hlpr.image("OpenText Fortify","https://cdn.asp.events/CLIENT_CloserSt_D86EA381_5056_B739_5482D50A1A831DDD/sites/CSWA-2023/media/libraries/exhibitors/Ezone-cover.png/fit-in/1500x9999/filters:no_upscale()") + "\n";
         summary += hlpr.header("Fortify AST Results", 1);
         summary += hlpr.rule();
-        summary += ":date: Summary date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+        summary += ":calendar: Summary date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
 
         spec.commandLine().getOut().print(summary);
         spec.commandLine().getOut().print("\n");
