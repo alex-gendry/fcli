@@ -222,7 +222,7 @@ jobs:
 #
   release:
     name: release
-    needs: [build, native_linux, native_mac, native_win]
+    needs: [build, native_linux]
     runs-on: ubuntu-latest
     steps:
       - name: Check-out source code
